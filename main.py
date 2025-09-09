@@ -1,40 +1,65 @@
+import sys
+import os
+from google import genai
+from google.genai import types
+from dotenv import load_dotenv
+
+
 def main():
-    import os
-    from dotenv import load_dotenv
-    import sys
-
     load_dotenv()
+
+    # Determine if --verbose flag is present anywhere in the command line arguments
+    verbose = "--verbose" in sys.argv
+
+    # Filter out any arguments that start with '--' (like --verbose)
+    # to only keep the actual prompt parts.
+    args = []
+    for arg in sys.argv[1:]:
+        if not arg.startswith("--"):
+            args.append(arg)
+
+    # If no prompt arguments remain after filtering, display usage and exit.
+    if not args:
+        print("AI Code Assistant")
+        print('\nUsage: python main.py "your prompt here" [--verbose]')
+        print('Example: python main.py "How do I build a calculator app?"')
+        sys.exit(1)
+
     api_key = os.environ.get("GEMINI_API_KEY")
-
-    from google import genai
-
     client = genai.Client(api_key=api_key)
 
+    # Join the remaining arguments to form the full user prompt
+    user_prompt = " ".join(args)
 
-    # check if  a command line argument for the prompt exists
+    # If verbose mode is enabled, print the user prompt.
+    if verbose:
+        print(f"User prompt: {user_prompt}\n")
 
-    if len(sys.argv) >= 2:
-        user_prompt = sys.argv[1]
+    # Construct the message payload for the API call.
+    messages = [
+        types.Content(role="user", parts=[types.Part(text=user_prompt)]),
+    ]
 
-        response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
-        contents=[user_prompt])
+    # Call the helper function to generate and print content, passing the verbose flag.
+    generate_content(client, messages, verbose)
 
-        print(response.text) # take the first argument in the prompt
 
-        if len(sys.argv) >= 3 and sys.argv[2] == "--verbose":
-            print(response.text)
-            print(f"User prompt: {sys.argv[1]}")
-            print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-            print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
-        
-        else:
-            print(response.text)
-    else:
-        # provide a default prompt
-        print("Error: No prompt provided. Please provide a prompt as a command-line argument.")
-        sys.exit(1)
+def generate_content(client, messages, verbose):
+    # Generate the content from the model. This happens only once.
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-001",
+        contents=messages,
+    )
+
+    # If verbose mode is enabled, print the token counts.
+    if verbose:
+        print("Prompt tokens:", response.usage_metadata.prompt_token_count)
+        print("Response tokens:", response.usage_metadata.candidates_token_count)
+
+    # Always print the main response text.
+    print("Response:")
+    print(response.text)
+
 
 if __name__ == "__main__":
     main()
-
