@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 
 def main():
+    #this reads .env in the current working directory
     load_dotenv()
 
     # Determine if --verbose flag is present anywhere in the command line arguments
