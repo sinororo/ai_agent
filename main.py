@@ -60,6 +60,7 @@ def generate_content(client, messages, verbose):
     # Always print the main response text.
     print("Response:")
     print(response.text)
+    # print("Args", sys.argv)
 
 
 if __name__ == "__main__":
