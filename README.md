@@ -1,4 +1,5 @@
 # todo
+1. finish exercise 2 l2
 
 ```
 ai_agent
