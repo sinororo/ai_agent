@@ -1,4 +1,5 @@
 import os
+
 def get_files_info(working_directory, directory="."):
     try:
 
@@ -27,3 +28,4 @@ def get_files_info(working_directory, directory="."):
         
     except Exception as e:
         return f"Error: {e}"
+    
