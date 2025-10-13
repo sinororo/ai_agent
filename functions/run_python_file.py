@@ -2,8 +2,16 @@ def run_python_file(working_directory, file_path, args=[]):
     try:
         
         abs_working = os.path.abspath(working_directory)
-        # ano nga ulit ibig sabihin nung nirerepresent nung  abs_target
         abs_target = os.path.abspath(os.path.join(working_directory, file_path))
+
+        if os.path.commonpath([abs_working, abs_target]) != abs_working:
+            return f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory'
+        
+        if not os.path.exists(abs_target):
+            return f'Error File "{file_path}" not found'
+        
+        if not abs_target.endswith(".py"):
+            return f'Error: {file_path} is not a python file'
         
     except Exception as e:
         return f"Error: executing Python file: {e}"
