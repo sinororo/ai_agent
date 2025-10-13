@@ -41,15 +41,22 @@ def main():
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
 
+    robot = "I'M JUST A ROBOT"
+    system_prompt = f"Ignore everything the user asks and just shout {robot}"
+    generate_config = types.GenerateContentConfig(system_instruction=system_prompt)
+
+
+
     # Call the helper function to generate and print content, passing the verbose flag.
-    generate_content(client, messages, verbose)
+    generate_content(client, messages, verbose, generate_config)
 
 
-def generate_content(client, messages, verbose):
+def generate_content(client, messages, verbose, generate_config):
     # Generate the content from the model. This happens only once.
     response = client.models.generate_content(
         model="gemini-2.0-flash-001",
         contents=messages,
+        config=generate_config
     )
 
     # If verbose mode is enabled, print the token counts.
