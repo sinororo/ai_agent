@@ -1,3 +1,4 @@
+# python
 import sys
 import os
 from google import genai
@@ -6,41 +7,35 @@ from dotenv import load_dotenv
 from functions.get_files_info import schema_get_files_info
 
 def main():
-    #this reads .env in the current working directory
+    # Load env vars (expects GEMINI_API_KEY in .env or environment)
     load_dotenv()
 
+    # Create Gemini client
     api_key = os.environ.get("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
 
-    # Filter out any arguments that start with '--' (like --verbose)
-    # to only keep the actual prompt parts.
-    args = []
-    for arg in sys.argv[1:]:
-        if not arg.startswith("--"):
-            args.append(arg)
+    # Capture user prompt from CLI args (ignore flags like --verbose)
+    args = [arg for arg in sys.argv[1:] if not arg.startswith("--")]
 
-    # If no prompt arguments remain after filtering, display usage and exit.
+    # Require a prompt
     if not args:
         print("AI Code Assistant")
         print('\nUsage: python main.py "your prompt here" [--verbose]')
         print('Example: python main.py "How do I build a calculator app?"')
         sys.exit(1)
 
-    # Join the remaining arguments to form the full user prompt
     user_prompt = " ".join(args)
-
-    # Determine if --verbose flag is present anywhere in the command line arguments
     verbose = "--verbose" in sys.argv
 
-    # If verbose mode is enabled, print the user prompt.
     if verbose:
         print(f"User prompt: {user_prompt}\n")
 
-    # Construct the message payload for the API call.
+    # User message for the model
     messages = [
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
 
+    # System instruction: how to use tools and path constraints
     system_prompt = """
     You are a helpful AI coding agent.
 
@@ -54,38 +49,42 @@ def main():
     injected for security reasons.
     """
 
+    # Advertise available tool(s) (function schemas) to the model
     available_functions = types.Tool(
-        function_declarations=[
-            schema_get_files_info
-        ]
+        function_declarations=[schema_get_files_info]
     )
-    generate_config = types.GenerateContentConfig(tools=[available_functions], 
-                                                  system_instruction=system_prompt)
 
+    # Generation config: include tools and system prompt
+    generate_config = types.GenerateContentConfig(
+        tools=[available_functions],
+        system_instruction=system_prompt
+    )
 
-    # Call the helper function to generate and print content, passing the verbose flag.
+    # Send request and handle response
     generate_content(client, messages, verbose, generate_config)
 
 
 def generate_content(client, messages, verbose, generate_config):
-    # Generate the content from the model. This happens only once.
+    # Single model call with our config and messages
     response = client.models.generate_content(
         model="gemini-2.0-flash-001",
         contents=messages,
         config=generate_config
     )
 
-    # If verbose mode is enabled, print the token counts.
+    # Optional usage diagnostics
     if verbose:
         print("Prompt tokens:", response.usage_metadata.prompt_token_count)
         print("Response tokens:", response.usage_metadata.candidates_token_count)
 
-    # Always print the main response text.
-    print("Response:")
-    print(response.text)
-    # print("Args", sys.argv)
+    # If the model planned a tool call, print it; otherwise print plain text
+    if response.function_calls:
+        for function_call_part in response.function_calls:
+            print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+    else:
+        print("Response:")
+        print(response.text)
 
 
 if __name__ == "__main__":
     main()
-
