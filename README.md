@@ -1,4 +1,7 @@
-# To do..
+# 3 To do..
+1. learn about how function declaration works
+2. finish write_file.py schema declaration.
+3. use ai to put comments in each function and understand it
 
 # Project Tree
 ```
