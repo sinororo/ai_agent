@@ -12,6 +12,10 @@ from functions.write_file import schema_write_file
 from functions.run_python_file import schema_run_python_file
 
 
+def call_function(function_call_part, verbose = False):
+    pass
+
+
 def generate_content(client, messages, verbose, generate_config):
     """
     Send a single request to the model and print either a planned function call
