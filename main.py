@@ -13,7 +13,11 @@ from functions.run_python_file import schema_run_python_file
 
 
 def call_function(function_call_part, verbose = False):
-    pass
+    if verbose == True:
+        print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+    else:
+        print(f" - Calling function: {function_call_part.name}")
+
 
 
 def generate_content(client, messages, verbose, generate_config):
