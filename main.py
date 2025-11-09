@@ -12,14 +12,6 @@ from functions.write_file import schema_write_file
 from functions.run_python_file import schema_run_python_file
 
 
-def call_function(function_call_part, verbose = False):
-    if verbose == True:
-        print(f"Calling function: {function_call_part.name}({function_call_part.args})")
-    else:
-        print(f" - Calling function: {function_call_part.name}")
-
-
-
 def generate_content(client, messages, verbose, generate_config):
     """
     Send a single request to the model and print either a planned function call
